@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell"
 )
@@ -13,8 +14,9 @@ func main() {
 		log.Fatalf("Failed to create screen: %+v\n", err)
 	}
 
+	go run(screen, style)
+
 	for {
-		drawContent(screen, style)
 		pollEvents(screen)
 	}
 }
@@ -41,13 +43,21 @@ func defaultStyle() tcell.Style {
 	return tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorWhite)
 }
 
-// Draws the game content.
-func drawContent(screen tcell.Screen, style tcell.Style) {
-	screen.SetContent(0, 0, 'H', nil, style)
-	screen.SetContent(1, 0, 'i', nil, style)
-	screen.SetContent(2, 0, '!', nil, style)
+// Runs the game.
+func run(screen tcell.Screen, style tcell.Style) {
+	x := 0
+	for {
+		screen.Clear()
 
-	screen.Show()
+		screen.SetContent(x, 10, 'H', nil, style)
+		screen.SetContent(x+1, 10, 'i', nil, style)
+		screen.SetContent(x+2, 10, '!', nil, style)
+
+		screen.Show()
+		x++
+
+		time.Sleep(40 * time.Millisecond)
+	}
 }
 
 // Listens for user input events, like keyboard input.
