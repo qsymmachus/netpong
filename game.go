@@ -8,8 +8,10 @@ import (
 
 // Models a game of pong.
 type Game struct {
-	Screen tcell.Screen
-	Ball   Ball
+	Screen  tcell.Screen
+	Ball    Ball
+	Player1 Paddle
+	Player2 Paddle
 }
 
 // Starts the game.
