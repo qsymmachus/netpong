@@ -3,18 +3,29 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/gdamore/tcell"
 )
 
 func main() {
-	screen, style, err := initScreen()
+	screen, err := initScreen()
 	if err != nil {
 		log.Fatalf("Failed to create screen: %+v\n", err)
 	}
 
-	go run(screen, style)
+	ball := Ball{
+		X:      1,
+		Y:      1,
+		Xspeed: 1,
+		Yspeed: 1,
+	}
+
+	game := Game{
+		Screen: screen,
+		Ball:   ball,
+	}
+
+	go game.Run()
 
 	for {
 		pollEvents(screen)
@@ -22,42 +33,20 @@ func main() {
 }
 
 // Sets up the game screen.
-func initScreen() (screen tcell.Screen, style tcell.Style, err error) {
+func initScreen() (screen tcell.Screen, err error) {
 	screen, err = tcell.NewScreen()
 	if err != nil {
-		return screen, style, err
+		return screen, err
 	}
 
 	if err := screen.Init(); err != nil {
-		return screen, style, err
+		return screen, err
 	}
 
-	defaultStyle := defaultStyle()
+	defaultStyle := DefaultStyle()
 	screen.SetStyle(defaultStyle)
 
-	return screen, defaultStyle, nil
-}
-
-// The default style for the screen.
-func defaultStyle() tcell.Style {
-	return tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorWhite)
-}
-
-// Runs the game.
-func run(screen tcell.Screen, style tcell.Style) {
-	x := 0
-	for {
-		screen.Clear()
-
-		screen.SetContent(x, 10, 'H', nil, style)
-		screen.SetContent(x+1, 10, 'i', nil, style)
-		screen.SetContent(x+2, 10, '!', nil, style)
-
-		screen.Show()
-		x++
-
-		time.Sleep(40 * time.Millisecond)
-	}
+	return screen, nil
 }
 
 // Listens for user input events, like keyboard input.
