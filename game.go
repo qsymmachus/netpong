@@ -19,6 +19,9 @@ func (g *Game) Run() {
 	for {
 		g.Screen.Clear()
 
+		width, height := g.Screen.Size()
+		g.Ball.CheckEdges(width, height)
+
 		g.Ball.Update()
 		g.Screen.SetContent(g.Ball.X, g.Ball.Y, g.Ball.Display(), nil, style)
 
