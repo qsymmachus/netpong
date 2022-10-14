@@ -46,8 +46,8 @@ func (g *Game) DrawPaddles(paddleStyle tcell.Style) {
 		g.Screen,
 		g.Player2.X,
 		g.Player2.Y,
-		g.Player2.X+g.Player1.Width,
-		g.Player2.Y+g.Player1.Height,
+		g.Player2.X+g.Player2.Width,
+		g.Player2.Y+g.Player2.Height,
 		paddleStyle,
 		g.Player2.Display(),
 	)

@@ -48,7 +48,7 @@ func main() {
 	go game.Run()
 
 	for {
-		pollEvents(screen)
+		pollEvents(&game)
 	}
 }
 
@@ -70,7 +70,10 @@ func initScreen() (screen tcell.Screen, err error) {
 }
 
 // Listens for user input events, like keyboard input.
-func pollEvents(screen tcell.Screen) {
+func pollEvents(game *Game) {
+	screen := game.Screen
+	_, height := screen.Size()
+
 	switch event := screen.PollEvent().(type) {
 	case *tcell.EventResize:
 		screen.Sync()
@@ -78,6 +81,14 @@ func pollEvents(screen tcell.Screen) {
 		if isExitKey(event.Key()) {
 			screen.Fini()
 			os.Exit(0)
+		} else if event.Rune() == 'w' {
+			game.Player1.MoveUp()
+		} else if event.Rune() == 's' {
+			game.Player1.MoveDown(height)
+		} else if event.Key() == tcell.KeyUp {
+			game.Player2.MoveUp()
+		} else if event.Key() == tcell.KeyDown {
+			game.Player2.MoveDown(height)
 		}
 	}
 }
