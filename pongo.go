@@ -13,6 +13,8 @@ func main() {
 		log.Fatalf("Failed to create screen: %+v\n", err)
 	}
 
+	width, _ := screen.Size()
+
 	ball := Ball{
 		X:      1,
 		Y:      1,
@@ -20,9 +22,27 @@ func main() {
 		Yspeed: 1,
 	}
 
+	player1 := Paddle{
+		Width:  1,
+		Height: 6,
+		X:      5,
+		Y:      3,
+		YSpeed: 3,
+	}
+
+	player2 := Paddle{
+		Width:  1,
+		Height: 6,
+		X:      width - 5,
+		Y:      3,
+		YSpeed: 3,
+	}
+
 	game := Game{
-		Screen: screen,
-		Ball:   ball,
+		Screen:  screen,
+		Ball:    ball,
+		Player1: player1,
+		Player2: player2,
 	}
 
 	go game.Run()
