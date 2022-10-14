@@ -31,3 +31,28 @@ func (g *Game) Run() {
 		g.Screen.Show()
 	}
 }
+
+// Draws a sprite on the screen, a group of runes with rectangular boundaries set
+// by `xStart`, `yStart`, `xEnd`, and `yStart`.
+func DrawSprite(s tcell.Screen, xStart, yStart, xEnd, yEnd int, style tcell.Style, text string) {
+	row := yStart
+	col := xStart
+
+	for _, r := range []rune(text) {
+		s.SetContent(col, row, r, nil, style)
+		col++
+
+		// If we've reached the vertical edge (last column), move down a row and
+		// start from the first column.
+		if col >= xEnd {
+			row++
+			col = xStart
+		}
+
+		// If we've reach the horizontal edge (last row), we've finished drawing
+		// the sprite.
+		if row > yEnd {
+			break
+		}
+	}
+}
