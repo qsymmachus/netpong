@@ -59,7 +59,8 @@ func (g *Game) DrawBall(style tcell.Style) {
 
 	g.Ball.CheckEdges(width, height)
 	g.Ball.Update()
-	g.Screen.SetContent(g.Ball.X, g.Ball.Y, g.Ball.Display(), nil, style)
+
+	DrawSprite(g.Screen, g.Ball.X, g.Ball.Y, g.Ball.X, g.Ball.Y, style, g.Ball.Display())
 }
 
 // Draws a sprite on the screen, a group of runes with rectangular boundaries set

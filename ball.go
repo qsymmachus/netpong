@@ -9,8 +9,8 @@ type Ball struct {
 }
 
 // Displays the ball as a white dot.
-func (b *Ball) Display() rune {
-	return '\u25CF'
+func (b *Ball) Display() string {
+	return "\u25CF"
 }
 
 // Updates the ball's position by incrementing its position by its speed.
