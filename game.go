@@ -21,35 +21,45 @@ func (g *Game) Run() {
 
 	for {
 		g.Screen.Clear()
-		width, height := g.Screen.Size()
 
-		DrawSprite(
-			g.Screen,
-			g.Player1.X,
-			g.Player1.Y,
-			g.Player1.X+g.Player1.Width,
-			g.Player1.Y+g.Player1.Height,
-			paddleStyle,
-			g.Player1.Display(),
-		)
-
-		DrawSprite(
-			g.Screen,
-			g.Player2.X,
-			g.Player2.Y,
-			g.Player2.X+g.Player1.Width,
-			g.Player2.Y+g.Player1.Height,
-			paddleStyle,
-			g.Player2.Display(),
-		)
-
-		g.Ball.CheckEdges(width, height)
-		g.Ball.Update()
-		g.Screen.SetContent(g.Ball.X, g.Ball.Y, g.Ball.Display(), nil, style)
+		g.DrawPaddles(paddleStyle)
+		g.DrawBall(style)
 
 		time.Sleep(40 * time.Millisecond)
 		g.Screen.Show()
 	}
+}
+
+// Draw the player paddles on the game screen.
+func (g *Game) DrawPaddles(paddleStyle tcell.Style) {
+	DrawSprite(
+		g.Screen,
+		g.Player1.X,
+		g.Player1.Y,
+		g.Player1.X+g.Player1.Width,
+		g.Player1.Y+g.Player1.Height,
+		paddleStyle,
+		g.Player1.Display(),
+	)
+
+	DrawSprite(
+		g.Screen,
+		g.Player2.X,
+		g.Player2.Y,
+		g.Player2.X+g.Player1.Width,
+		g.Player2.Y+g.Player1.Height,
+		paddleStyle,
+		g.Player2.Display(),
+	)
+}
+
+// Draw the ball on the game screen.
+func (g *Game) DrawBall(style tcell.Style) {
+	width, height := g.Screen.Size()
+
+	g.Ball.CheckEdges(width, height)
+	g.Ball.Update()
+	g.Screen.SetContent(g.Ball.X, g.Ball.Y, g.Ball.Display(), nil, style)
 }
 
 // Draws a sprite on the screen, a group of runes with rectangular boundaries set
