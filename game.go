@@ -16,14 +16,34 @@ type Game struct {
 
 // Starts the game.
 func (g *Game) Run() {
-	style := DefaultStyle()
+	style := DefaultGameStyle()
+	paddleStyle := DefaultPaddleStyle()
 
 	for {
 		g.Screen.Clear()
-
 		width, height := g.Screen.Size()
-		g.Ball.CheckEdges(width, height)
 
+		DrawSprite(
+			g.Screen,
+			g.Player1.X,
+			g.Player1.Y,
+			g.Player1.X+g.Player1.Width,
+			g.Player1.Y+g.Player1.Height,
+			paddleStyle,
+			g.Player1.Display(),
+		)
+
+		DrawSprite(
+			g.Screen,
+			g.Player2.X,
+			g.Player2.Y,
+			g.Player2.X+g.Player1.Width,
+			g.Player2.Y+g.Player1.Height,
+			paddleStyle,
+			g.Player2.Display(),
+		)
+
+		g.Ball.CheckEdges(width, height)
 		g.Ball.Update()
 		g.Screen.SetContent(g.Ball.X, g.Ball.Y, g.Ball.Display(), nil, style)
 

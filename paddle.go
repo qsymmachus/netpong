@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 type Paddle struct {
 	X      int
@@ -10,7 +12,7 @@ type Paddle struct {
 	Height int
 }
 
-// Displays the paddle as a stack of white spaces.
+// Displays a paddle as a stack of white spaces.
 func (p *Paddle) Display() string {
 	return strings.Repeat(" ", p.Height)
 }

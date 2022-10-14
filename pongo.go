@@ -63,7 +63,7 @@ func initScreen() (screen tcell.Screen, err error) {
 		return screen, err
 	}
 
-	defaultStyle := DefaultStyle()
+	defaultStyle := DefaultGameStyle()
 	screen.SetStyle(defaultStyle)
 
 	return screen, nil
