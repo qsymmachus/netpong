@@ -22,7 +22,7 @@ func (p *Paddle) MoveUp() {
 // Moves the position of the paddle down.
 func (p *Paddle) MoveDown(windowHeight int) {
 	if p.Y < windowHeight-p.Height {
-		p.Y = +p.YSpeed
+		p.Y += p.YSpeed
 	}
 }
 
