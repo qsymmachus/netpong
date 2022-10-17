@@ -23,10 +23,34 @@ func (b *Ball) Update() {
 // "bounces" by reversing its current direction along the correct dimension.
 func (b *Ball) CheckEdges(maxWidth, maxHeight int) {
 	if b.X <= 0 || b.X >= maxWidth {
-		b.Xspeed *= -1
+		b.ReverseX()
 	}
 
 	if b.Y <= 0 || b.Y >= maxHeight {
-		b.Yspeed *= -1
+		b.ReverseY()
 	}
+}
+
+// Checks if the ball has collided with one of the players paddles. If it has,
+// the ball "bounces" by reverse its current direction of travel.
+func (b *Ball) CheckCollisions(player1, player2 Paddle) {
+	if b.Intersects(player1) || b.Intersects(player2) {
+		b.ReverseX()
+		b.ReverseY()
+	}
+}
+
+// Checks if the ball has collided with a paddle.
+func (b *Ball) Intersects(p Paddle) bool {
+	return b.X >= p.X && b.X <= p.X+p.Width && b.Y >= p.Y && p.Y <= p.Y+p.Height
+}
+
+// Reverses the ball's direction along the X axis.
+func (b *Ball) ReverseX() {
+	b.Xspeed *= -1
+}
+
+// Reserves the ball's direction along the Y axis.
+func (b *Ball) ReverseY() {
+	b.Yspeed *= -1
 }

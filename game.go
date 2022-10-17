@@ -58,6 +58,7 @@ func (g *Game) DrawBall(style tcell.Style) {
 	width, height := g.Screen.Size()
 
 	g.Ball.CheckEdges(width, height)
+	g.Ball.CheckCollisions(g.Player1, g.Player2)
 	g.Ball.Update()
 
 	DrawSprite(g.Screen, g.Ball.X, g.Ball.Y, g.Ball.X, g.Ball.Y, style, g.Ball.Display())
