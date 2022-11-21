@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell"
 )
@@ -16,9 +18,9 @@ func main() {
 	width, _ := screen.Size()
 
 	ball := Ball{
-		X:      1,
+		X:      width / 2,
 		Y:      1,
-		Xspeed: 1,
+		Xspeed: 1 * randomizeBallDirection(),
 		Yspeed: 1,
 	}
 
@@ -95,4 +97,18 @@ func pollEvents(game *Game) {
 
 func isExitKey(key tcell.Key) bool {
 	return key == tcell.KeyEscape || key == tcell.KeyCtrlC
+}
+
+// Randomizes the direction of the ball along the X-axis by returning -1 or 1.
+func randomizeBallDirection() (direction int) {
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(2)
+
+	if n == 1 {
+		direction = 1
+	} else {
+		direction = -1
+	}
+
+	return direction
 }
