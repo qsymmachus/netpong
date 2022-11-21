@@ -19,11 +19,20 @@ func (b *Ball) Update() {
 	b.Y += b.Yspeed
 }
 
-// Checks if the ball has hit an edge of the game screen. If it has, the ball
-// "bounces" by reversing its current direction along the correct dimension.
+// Checks if the ball has hit an edge of the game screen.
+//
+// If it has hit the vertical edges, the ball is reset travelling the direction
+// of the edge it hit.
+//
+// If it has hit the horizontal edges, the ball "bounces" by reversing its
+// current direction of travel.
 func (b *Ball) CheckEdges(maxWidth, maxHeight int) {
-	if b.X <= 0 || b.X >= maxWidth {
-		b.ReverseX()
+	if b.X <= 0 {
+		b.ResetLeft(maxWidth)
+	}
+
+	if b.X >= maxWidth {
+		b.ResetRight(maxWidth)
 	}
 
 	if b.Y <= 0 || b.Y >= maxHeight {
@@ -32,7 +41,7 @@ func (b *Ball) CheckEdges(maxWidth, maxHeight int) {
 }
 
 // Checks if the ball has collided with one of the players paddles. If it has,
-// the ball "bounces" by reverse its current direction of travel.
+// the ball "bounces" by reversing its current direction of travel.
 func (b *Ball) CheckCollisions(player1, player2 Paddle) {
 	if b.Intersects(player1) || b.Intersects(player2) {
 		b.ReverseX()
@@ -53,4 +62,20 @@ func (b *Ball) ReverseX() {
 // Reserves the ball's direction along the Y axis.
 func (b *Ball) ReverseY() {
 	b.Yspeed *= -1
+}
+
+// Resets the ball position with the ball traveling left.
+func (b *Ball) ResetLeft(width int) {
+	b.X = width / 2
+	b.Y = 1
+	b.Xspeed = -1
+	b.Yspeed = 1
+}
+
+// Resets the ball position with the ball traveling right.
+func (b *Ball) ResetRight(width int) {
+	b.X = width / 2
+	b.Y = 1
+	b.Xspeed = 1
+	b.Yspeed = 1
 }
