@@ -19,22 +19,10 @@ func (b *Ball) Update() {
 	b.Y += b.Yspeed
 }
 
-// Checks if the ball has hit an edge of the game screen.
-//
-// If it has hit the vertical edges, the ball is reset travelling the direction
-// of the edge it hit.
-//
-// If it has hit the horizontal edges, the ball "bounces" by reversing its
-// current direction of travel.
+// Checks if the ball has hit a top or bottom edge of the game screen.
+// If it has hit the  edges, the ball "bounces" by reversing its direction
+// of travel.
 func (b *Ball) CheckEdges(maxWidth, maxHeight int) {
-	if b.X <= 0 {
-		b.ResetLeft(maxWidth)
-	}
-
-	if b.X >= maxWidth {
-		b.ResetRight(maxWidth)
-	}
-
 	if b.Y <= 0 || b.Y >= maxHeight {
 		b.ReverseY()
 	}
@@ -78,4 +66,14 @@ func (b *Ball) ResetRight(width int) {
 	b.Y = 1
 	b.Xspeed = 1
 	b.Yspeed = 1
+}
+
+// Checks if the ball hit the left edge.
+func (b *Ball) HasHitLeft() bool {
+	return b.X <= 0
+}
+
+// Checks if the ball hit the right edge.
+func (b *Ball) HasHitRight(width int) bool {
+	return b.X >= width
 }

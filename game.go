@@ -25,7 +25,7 @@ func (g *Game) Run() {
 		g.DrawPaddles(paddleStyle)
 		g.DrawBall(style)
 
-		time.Sleep(40 * time.Millisecond)
+		pause(40)
 		g.Screen.Show()
 	}
 }
@@ -59,6 +59,17 @@ func (g *Game) DrawBall(style tcell.Style) {
 
 	g.Ball.CheckEdges(width, height)
 	g.Ball.CheckCollisions(g.Player1, g.Player2)
+
+	if g.Ball.HasHitLeft() {
+		pause(1000)
+		g.Ball.ResetLeft(width)
+	}
+
+	if g.Ball.HasHitRight(width) {
+		pause(1000)
+		g.Ball.ResetRight(width)
+	}
+
 	g.Ball.Update()
 
 	DrawSprite(g.Screen, g.Ball.X, g.Ball.Y, g.Ball.X, g.Ball.Y, style, g.Ball.Display())
@@ -87,4 +98,8 @@ func DrawSprite(s tcell.Screen, xStart, yStart, xEnd, yEnd int, style tcell.Styl
 			break
 		}
 	}
+}
+
+func pause(milliseconds time.Duration) {
+	time.Sleep(milliseconds * time.Millisecond)
 }
