@@ -8,10 +8,10 @@ import (
 
 // Models a game of pong.
 type Game struct {
-	Screen  tcell.Screen
-	Ball    Ball
-	Player1 Paddle
-	Player2 Paddle
+	Screen      tcell.Screen
+	Ball        Ball
+	LeftPlayer  Paddle
+	RightPlayer Paddle
 }
 
 // Starts the game.
@@ -34,22 +34,22 @@ func (g *Game) Run() {
 func (g *Game) DrawPaddles(paddleStyle tcell.Style) {
 	DrawSprite(
 		g.Screen,
-		g.Player1.X,
-		g.Player1.Y,
-		g.Player1.X+g.Player1.Width,
-		g.Player1.Y+g.Player1.Height,
+		g.LeftPlayer.X,
+		g.LeftPlayer.Y,
+		g.LeftPlayer.X+g.LeftPlayer.Width,
+		g.LeftPlayer.Y+g.LeftPlayer.Height,
 		paddleStyle,
-		g.Player1.Display(),
+		g.LeftPlayer.Display(),
 	)
 
 	DrawSprite(
 		g.Screen,
-		g.Player2.X,
-		g.Player2.Y,
-		g.Player2.X+g.Player2.Width,
-		g.Player2.Y+g.Player2.Height,
+		g.RightPlayer.X,
+		g.RightPlayer.Y,
+		g.RightPlayer.X+g.RightPlayer.Width,
+		g.RightPlayer.Y+g.RightPlayer.Height,
 		paddleStyle,
-		g.Player2.Display(),
+		g.RightPlayer.Display(),
 	)
 }
 
@@ -58,7 +58,7 @@ func (g *Game) DrawBall(style tcell.Style) {
 	width, height := g.Screen.Size()
 
 	g.Ball.CheckEdges(width, height)
-	g.Ball.CheckCollisions(g.Player1, g.Player2)
+	g.Ball.CheckCollisions(g.LeftPlayer, g.RightPlayer)
 
 	if g.Ball.HasHitLeft() {
 		pause(1000)

@@ -41,10 +41,10 @@ func main() {
 	}
 
 	game := Game{
-		Screen:  screen,
-		Ball:    ball,
-		Player1: player1,
-		Player2: player2,
+		Screen:      screen,
+		Ball:        ball,
+		LeftPlayer:  player1,
+		RightPlayer: player2,
 	}
 
 	go game.Run()
@@ -84,13 +84,13 @@ func pollEvents(game *Game) {
 			screen.Fini()
 			os.Exit(0)
 		} else if event.Rune() == 'w' {
-			game.Player1.MoveUp()
+			game.LeftPlayer.MoveUp()
 		} else if event.Rune() == 's' {
-			game.Player1.MoveDown(height)
+			game.LeftPlayer.MoveDown(height)
 		} else if event.Key() == tcell.KeyUp {
-			game.Player2.MoveUp()
+			game.RightPlayer.MoveUp()
 		} else if event.Key() == tcell.KeyDown {
-			game.Player2.MoveDown(height)
+			game.RightPlayer.MoveDown(height)
 		}
 	}
 }
