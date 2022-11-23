@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -24,6 +26,7 @@ func (g *Game) Run() {
 
 		g.DrawPaddles(paddleStyle)
 		g.DrawBall(style)
+		g.DrawScores(style)
 
 		pause(40)
 		g.Screen.Show()
@@ -75,6 +78,16 @@ func (g *Game) DrawBall(style tcell.Style) {
 	g.Ball.Update()
 
 	DrawSprite(g.Screen, g.Ball.X, g.Ball.Y, g.Ball.X, g.Ball.Y, style, g.Ball.Display())
+}
+
+// Draws the player scores on the game screen.
+func (g *Game) DrawScores(style tcell.Style) {
+	width, _ := g.Screen.Size()
+	leftScore := fmt.Sprintf("← %s", strconv.Itoa(g.LeftPlayer.Score))
+	rightScore := fmt.Sprintf("%s →", strconv.Itoa(g.RightPlayer.Score))
+
+	DrawSprite(g.Screen, (width/2)-10, 1, (width/2)-7, 1, style, leftScore)
+	DrawSprite(g.Screen, (width/2)+10, 1, (width/2)+13, 1, style, rightScore)
 }
 
 // Draws a sprite on the screen, a group of runes with rectangular boundaries set
