@@ -15,7 +15,7 @@ func main() {
 		log.Fatalf("Failed to create screen: %+v\n", err)
 	}
 
-	width, _ := screen.Size()
+	width, height := screen.Size()
 
 	ball := Ball{
 		X:      width / 2,
@@ -30,7 +30,7 @@ func main() {
 			Width:  1,
 			Height: 6,
 			X:      5,
-			Y:      3,
+			Y:      (height / 2) - 3,
 			YSpeed: 3,
 		},
 	}
@@ -41,7 +41,7 @@ func main() {
 			Width:  1,
 			Height: 6,
 			X:      width - 5,
-			Y:      3,
+			Y:      (height / 2) - 3,
 			YSpeed: 3,
 		},
 	}
