@@ -10,8 +10,8 @@ import (
 type Game struct {
 	Screen      tcell.Screen
 	Ball        Ball
-	LeftPlayer  Paddle
-	RightPlayer Paddle
+	LeftPlayer  Player
+	RightPlayer Player
 }
 
 // Starts the game.
@@ -34,22 +34,22 @@ func (g *Game) Run() {
 func (g *Game) DrawPaddles(paddleStyle tcell.Style) {
 	DrawSprite(
 		g.Screen,
-		g.LeftPlayer.X,
-		g.LeftPlayer.Y,
-		g.LeftPlayer.X+g.LeftPlayer.Width,
-		g.LeftPlayer.Y+g.LeftPlayer.Height,
+		g.LeftPlayer.Paddle.X,
+		g.LeftPlayer.Paddle.Y,
+		g.LeftPlayer.Paddle.X+g.LeftPlayer.Paddle.Width,
+		g.LeftPlayer.Paddle.Y+g.LeftPlayer.Paddle.Height,
 		paddleStyle,
-		g.LeftPlayer.Display(),
+		g.LeftPlayer.Paddle.Display(),
 	)
 
 	DrawSprite(
 		g.Screen,
-		g.RightPlayer.X,
-		g.RightPlayer.Y,
-		g.RightPlayer.X+g.RightPlayer.Width,
-		g.RightPlayer.Y+g.RightPlayer.Height,
+		g.RightPlayer.Paddle.X,
+		g.RightPlayer.Paddle.Y,
+		g.RightPlayer.Paddle.X+g.RightPlayer.Paddle.Width,
+		g.RightPlayer.Paddle.Y+g.RightPlayer.Paddle.Height,
 		paddleStyle,
-		g.RightPlayer.Display(),
+		g.RightPlayer.Paddle.Display(),
 	)
 }
 
@@ -58,14 +58,16 @@ func (g *Game) DrawBall(style tcell.Style) {
 	width, height := g.Screen.Size()
 
 	g.Ball.CheckEdges(width, height)
-	g.Ball.CheckCollisions(g.LeftPlayer, g.RightPlayer)
+	g.Ball.CheckCollisions(g.LeftPlayer.Paddle, g.RightPlayer.Paddle)
 
 	if g.Ball.HasHitLeft() {
+		g.RightPlayer.Score += 1
 		pause(1000)
 		g.Ball.ResetLeft(width)
 	}
 
 	if g.Ball.HasHitRight(width) {
+		g.LeftPlayer.Score += 1
 		pause(1000)
 		g.Ball.ResetRight(width)
 	}

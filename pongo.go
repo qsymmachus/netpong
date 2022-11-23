@@ -24,20 +24,26 @@ func main() {
 		Yspeed: 1,
 	}
 
-	player1 := Paddle{
-		Width:  1,
-		Height: 6,
-		X:      5,
-		Y:      3,
-		YSpeed: 3,
+	player1 := Player{
+		Score: 0,
+		Paddle: Paddle{
+			Width:  1,
+			Height: 6,
+			X:      5,
+			Y:      3,
+			YSpeed: 3,
+		},
 	}
 
-	player2 := Paddle{
-		Width:  1,
-		Height: 6,
-		X:      width - 5,
-		Y:      3,
-		YSpeed: 3,
+	player2 := Player{
+		Score: 0,
+		Paddle: Paddle{
+			Width:  1,
+			Height: 6,
+			X:      width - 5,
+			Y:      3,
+			YSpeed: 3,
+		},
 	}
 
 	game := Game{
@@ -84,13 +90,13 @@ func pollEvents(game *Game) {
 			screen.Fini()
 			os.Exit(0)
 		} else if event.Rune() == 'w' {
-			game.LeftPlayer.MoveUp()
+			game.LeftPlayer.Paddle.MoveUp()
 		} else if event.Rune() == 's' {
-			game.LeftPlayer.MoveDown(height)
+			game.LeftPlayer.Paddle.MoveDown(height)
 		} else if event.Key() == tcell.KeyUp {
-			game.RightPlayer.MoveUp()
+			game.RightPlayer.Paddle.MoveUp()
 		} else if event.Key() == tcell.KeyDown {
-			game.RightPlayer.MoveDown(height)
+			game.RightPlayer.Paddle.MoveDown(height)
 		}
 	}
 }

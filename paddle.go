@@ -10,6 +10,7 @@ type Paddle struct {
 	YSpeed int
 	Width  int
 	Height int
+	Score  int8
 }
 
 // Moves the position of the paddle up.
