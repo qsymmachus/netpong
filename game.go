@@ -14,6 +14,7 @@ type Game struct {
 	Ball        Ball
 	LeftPlayer  Player
 	RightPlayer Player
+	MaxScore    int
 }
 
 // Starts the game.
@@ -23,6 +24,11 @@ func (g *Game) Run() {
 
 	for {
 		g.Screen.Clear()
+
+		if g.GameOver() {
+			g.DrawEndGame(style)
+			break
+		}
 
 		g.DrawPaddles(paddleStyle)
 		g.DrawBall(style)
@@ -35,7 +41,7 @@ func (g *Game) Run() {
 
 // Draw the player paddles on the game screen.
 func (g *Game) DrawPaddles(paddleStyle tcell.Style) {
-	DrawSprite(
+	drawSprite(
 		g.Screen,
 		g.LeftPlayer.Paddle.X,
 		g.LeftPlayer.Paddle.Y,
@@ -45,7 +51,7 @@ func (g *Game) DrawPaddles(paddleStyle tcell.Style) {
 		g.LeftPlayer.Paddle.Display(),
 	)
 
-	DrawSprite(
+	drawSprite(
 		g.Screen,
 		g.RightPlayer.Paddle.X,
 		g.RightPlayer.Paddle.Y,
@@ -77,7 +83,7 @@ func (g *Game) DrawBall(style tcell.Style) {
 
 	g.Ball.Update()
 
-	DrawSprite(g.Screen, g.Ball.X, g.Ball.Y, g.Ball.X, g.Ball.Y, style, g.Ball.Display())
+	drawSprite(g.Screen, g.Ball.X, g.Ball.Y, g.Ball.X, g.Ball.Y, style, g.Ball.Display())
 }
 
 // Draws the player scores on the game screen.
@@ -86,13 +92,35 @@ func (g *Game) DrawScores(style tcell.Style) {
 	leftScore := fmt.Sprintf("← %s", strconv.Itoa(g.LeftPlayer.Score))
 	rightScore := fmt.Sprintf("%s →", strconv.Itoa(g.RightPlayer.Score))
 
-	DrawSprite(g.Screen, (width/2)-10, 1, (width/2)-7, 1, style, leftScore)
-	DrawSprite(g.Screen, (width/2)+10, 1, (width/2)+13, 1, style, rightScore)
+	drawSprite(g.Screen, (width/2)-10, 1, (width/2)-7, 1, style, leftScore)
+	drawSprite(g.Screen, (width/2)+10, 1, (width/2)+13, 1, style, rightScore)
+}
+
+// Checks if the game is over.
+func (g *Game) GameOver() bool {
+	return g.LeftPlayer.Score == g.MaxScore || g.RightPlayer.Score == g.MaxScore
+}
+
+// Declares the winner of the game.
+func (g *Game) DeclareWinner() string {
+	if g.LeftPlayer.Score > g.RightPlayer.Score {
+		return "← Winner"
+	} else {
+		return "Winner →"
+	}
+}
+
+func (g *Game) DrawEndGame(style tcell.Style) {
+	width, _ := g.Screen.Size()
+
+	drawSprite(g.Screen, (width/2)-4, 7, (width/2)+5, 7, style, g.DeclareWinner())
+	drawSprite(g.Screen, (width/2)-8, 10, (width/2)+8, 10, style, "(CTRL+C to exit)")
+	g.Screen.Show()
 }
 
 // Draws a sprite on the screen, a group of runes with rectangular boundaries set
 // by `xStart`, `yStart`, `xEnd`, and `yStart`.
-func DrawSprite(s tcell.Screen, xStart, yStart, xEnd, yEnd int, style tcell.Style, text string) {
+func drawSprite(s tcell.Screen, xStart, yStart, xEnd, yEnd int, style tcell.Style, text string) {
 	row := yStart
 	col := xStart
 

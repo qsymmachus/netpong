@@ -51,6 +51,7 @@ func main() {
 		Ball:        ball,
 		LeftPlayer:  player1,
 		RightPlayer: player2,
+		MaxScore:    5,
 	}
 
 	go game.Run()
