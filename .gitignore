@@ -1,5 +1,5 @@
-# Don't commit the pongo binary
-pongo
+# Don't commit any compiled binary
+netpong
 
 # Binaries for programs and plugins
 *.exe

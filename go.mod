@@ -1,4 +1,4 @@
-module github.com/qsymmachus/pongo
+module github.com/qsymmachus/netpong
 
 go 1.18
 
