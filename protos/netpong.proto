@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package netpong;
+
+// Interface for a game of pong played over the network.
+service NetPong {
+  // Initiates a game of pong as a bi-directional stream of paddle moves from each player.
+  rpc Play(stream MovePaddle) returns (stream MovePaddle) {}
+}
+
+// The direction to move a pong paddle.
+enum Direction {
+  UP = 0;
+  DOWN = 1;
+}
+
+// A command to move a paddle in a particular direction.
+message MovePaddle {
+  Direction direction = 1;
+}
