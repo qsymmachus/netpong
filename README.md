@@ -15,3 +15,13 @@ As you're actively developing the game, you can compile and play it with this co
 ```sh
 go run .
 ```
+
+If you modify `protos/netpong.proto`, you'll need to regenerate the gRPC code with this command:
+
+```
+protoc --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+    protos/netpong.proto
+```
+
+__TODO__: Consider creating a makefile for this codegen task.
