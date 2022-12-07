@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.9
-// source: protos/netpong.proto
+// source: netpong/netpong.proto
 
 package netpong
 
@@ -135,5 +135,5 @@ var NetPong_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "protos/netpong.proto",
+	Metadata: "netpong/netpong.proto",
 }

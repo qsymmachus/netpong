@@ -21,7 +21,7 @@ If you modify `protos/netpong.proto`, you'll need to regenerate the gRPC code wi
 ```
 protoc --go_out=. --go_opt=paths=source_relative \
     --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    protos/netpong.proto
+    netpong/netpong.proto
 ```
 
 __TODO__: Consider creating a makefile for this codegen task.

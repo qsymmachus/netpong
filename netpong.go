@@ -1,15 +1,32 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"math/rand"
 	"os"
 	"time"
 
 	"github.com/gdamore/tcell"
+	pb "github.com/qsymmachus/netpong/netpong"
+	"google.golang.org/grpc"
+)
+
+var (
+	serverAddress = flag.String("address", "localhost:60049", "The address of the netpong game to connect to in the format of host:port")
 )
 
 func main() {
+	flag.Parse()
+
+	conn, err := grpc.Dial(*serverAddress)
+	if err != nil {
+		log.Fatalf("Failed to connect to remote game: %v\n", err)
+	}
+	defer conn.Close()
+
+	client := pb.New
+
 	screen, err := initScreen()
 	if err != nil {
 		log.Fatalf("Failed to create screen: %+v\n", err)
@@ -21,6 +38,10 @@ func main() {
 	for {
 		pollEvents(&game)
 	}
+}
+
+func createClient() {
+
 }
 
 func createGame(screen tcell.Screen) Game {

@@ -1,6 +1,3 @@
-# Don't commit any compiled binary
-netpong
-
 # Binaries for programs and plugins
 *.exe
 *.exe~
