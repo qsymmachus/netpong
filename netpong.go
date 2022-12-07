@@ -15,6 +15,15 @@ func main() {
 		log.Fatalf("Failed to create screen: %+v\n", err)
 	}
 
+	game := createGame(screen)
+	go game.Run()
+
+	for {
+		pollEvents(&game)
+	}
+}
+
+func createGame(screen tcell.Screen) Game {
 	width, height := screen.Size()
 
 	ball := Ball{
@@ -46,18 +55,12 @@ func main() {
 		},
 	}
 
-	game := Game{
+	return Game{
 		Screen:      screen,
 		Ball:        ball,
 		LeftPlayer:  player1,
 		RightPlayer: player2,
 		MaxScore:    5,
-	}
-
-	go game.Run()
-
-	for {
-		pollEvents(&game)
 	}
 }
 
