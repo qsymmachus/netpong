@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -107,6 +108,30 @@ func (g *Game) DeclareWinner() string {
 		return "← Winner"
 	} else {
 		return "Winner →"
+	}
+}
+
+// Listens for user input events, like keyboard input.
+func (g *Game) PollEvents() {
+	screen := g.Screen
+	_, height := screen.Size()
+
+	switch event := screen.PollEvent().(type) {
+	case *tcell.EventResize:
+		screen.Sync()
+	case *tcell.EventKey:
+		if isExitKey(event.Key()) {
+			screen.Fini()
+			os.Exit(0)
+		} else if event.Rune() == 'w' {
+			g.LeftPlayer.Paddle.MoveUp()
+		} else if event.Rune() == 's' {
+			g.LeftPlayer.Paddle.MoveDown(height)
+		} else if event.Key() == tcell.KeyUp {
+			g.RightPlayer.Paddle.MoveUp()
+		} else if event.Key() == tcell.KeyDown {
+			g.RightPlayer.Paddle.MoveDown(height)
+		}
 	}
 }
 

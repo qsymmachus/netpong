@@ -4,12 +4,11 @@ import (
 	"flag"
 	"log"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/gdamore/tcell"
-	pb "github.com/qsymmachus/netpong/netpong"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -19,13 +18,15 @@ var (
 func main() {
 	flag.Parse()
 
-	conn, err := grpc.Dial(*serverAddress)
+	connOpts := grpc.WithTransportCredentials(insecure.NewCredentials())
+	conn, err := grpc.Dial(*serverAddress, connOpts)
 	if err != nil {
 		log.Fatalf("Failed to connect to remote game: %v\n", err)
 	}
 	defer conn.Close()
 
-	client := pb.New
+	// TODO do something with the client
+	// client := pb.NewNetPongClient(conn)
 
 	screen, err := initScreen()
 	if err != nil {
@@ -36,7 +37,7 @@ func main() {
 	go game.Run()
 
 	for {
-		pollEvents(&game)
+		game.PollEvents()
 	}
 }
 
@@ -100,30 +101,6 @@ func initScreen() (screen tcell.Screen, err error) {
 	screen.SetStyle(defaultStyle)
 
 	return screen, nil
-}
-
-// Listens for user input events, like keyboard input.
-func pollEvents(game *Game) {
-	screen := game.Screen
-	_, height := screen.Size()
-
-	switch event := screen.PollEvent().(type) {
-	case *tcell.EventResize:
-		screen.Sync()
-	case *tcell.EventKey:
-		if isExitKey(event.Key()) {
-			screen.Fini()
-			os.Exit(0)
-		} else if event.Rune() == 'w' {
-			game.LeftPlayer.Paddle.MoveUp()
-		} else if event.Rune() == 's' {
-			game.LeftPlayer.Paddle.MoveDown(height)
-		} else if event.Key() == tcell.KeyUp {
-			game.RightPlayer.Paddle.MoveUp()
-		} else if event.Key() == tcell.KeyDown {
-			game.RightPlayer.Paddle.MoveDown(height)
-		}
-	}
 }
 
 func isExitKey(key tcell.Key) bool {
