@@ -7,38 +7,27 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	// pb "github.com/qsymmachus/netpong/netpong"
 )
 
 var (
+	serverMode    = flag.Bool("server", false, "Host a netpong game as a server")
+	port          = flag.Int("port", 60049, "The server port")
 	serverAddress = flag.String("address", "localhost:60049", "The address of the netpong game to connect to in the format of host:port")
 )
 
 func main() {
 	flag.Parse()
 
-	connOpts := grpc.WithTransportCredentials(insecure.NewCredentials())
-	conn, err := grpc.Dial(*serverAddress, connOpts)
-	if err != nil {
-		log.Fatalf("Failed to connect to remote game: %v\n", err)
-	}
-	defer conn.Close()
-
-	// TODO do something with the client
-	// client := pb.NewNetPongClient(conn)
-
 	screen, err := initScreen()
 	if err != nil {
 		log.Fatalf("Failed to create screen: %+v\n", err)
 	}
 
-	game := createGame(screen)
+	game := createGame(screen, *serverMode, *port, *serverAddress)
 	game.Run()
 }
 
-func createGame(screen tcell.Screen) Game {
+func createGame(screen tcell.Screen, serverMode bool, port int, serverAddress string) Game {
 	width, height := screen.Size()
 
 	ball := Ball{
@@ -71,11 +60,14 @@ func createGame(screen tcell.Screen) Game {
 	}
 
 	return Game{
-		Screen:      screen,
-		Ball:        ball,
-		LeftPlayer:  player1,
-		RightPlayer: player2,
-		MaxScore:    5,
+		Screen:        screen,
+		Ball:          ball,
+		LocalPlayer:   player1,
+		RemotePlayer:  player2,
+		MaxScore:      5,
+		ServerMode:    serverMode,
+		Port:          port,
+		ServerAddress: serverAddress,
 	}
 }
 

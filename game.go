@@ -2,20 +2,57 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/gdamore/tcell"
+	pb "github.com/qsymmachus/netpong/netpong"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	// pb "github.com/qsymmachus/netpong/netpong"
 )
 
-// Models a game of pong.
+// Models a game of pong. Implements the `NetPongServer` interface.
 type Game struct {
-	Screen      tcell.Screen
-	Ball        Ball
-	LeftPlayer  Player
-	RightPlayer Player
-	MaxScore    int
+	pb.UnimplementedNetPongServer
+
+	Screen       tcell.Screen
+	Ball         Ball
+	LocalPlayer  Player
+	RemotePlayer Player
+	MaxScore     int
+
+	Connected     bool
+	ServerMode    bool
+	Port          int
+	ServerAddress string
+}
+
+// Server-side handling of the stream of "move paddle" commands from the
+// remote player.
+func (g *Game) Play(stream pb.NetPong_PlayServer) error {
+	g.Connected = true
+	defer func() { g.Connected = false }()
+	_, height := g.Screen.Size()
+
+	for {
+		remoteMove, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		if remoteMove.Direction == pb.Direction_UP {
+			g.RemotePlayer.Paddle.MoveUp()
+		} else if remoteMove.Direction == pb.Direction_DOWN {
+			g.RemotePlayer.Paddle.MoveDown(height)
+		}
+	}
 }
 
 // Starts the game.
@@ -30,6 +67,23 @@ func (g *Game) Run() {
 			g.PollEvents()
 		}
 	}()
+
+	if g.ServerMode {
+		// If the game is running in server mode, wait for a connection.
+		for !g.Connected {
+			g.DrawWaitScreen(style)
+		}
+	} else {
+		connOpts := grpc.WithTransportCredentials(insecure.NewCredentials())
+		conn, err := grpc.Dial(*serverAddress, connOpts)
+		if err != nil {
+			log.Fatalf("Failed to connect to remote game: %v\n", err)
+		}
+		defer conn.Close()
+
+		// TODO do something with the client
+		// client := pb.NewNetPongClient(conn)
+	}
 
 	// Control loop that continually checks game state and redraws the screen based
 	// on that state.
@@ -54,22 +108,22 @@ func (g *Game) Run() {
 func (g *Game) DrawPaddles(paddleStyle tcell.Style) {
 	drawSprite(
 		g.Screen,
-		g.LeftPlayer.Paddle.X,
-		g.LeftPlayer.Paddle.Y,
-		g.LeftPlayer.Paddle.X+g.LeftPlayer.Paddle.Width,
-		g.LeftPlayer.Paddle.Y+g.LeftPlayer.Paddle.Height,
+		g.LocalPlayer.Paddle.X,
+		g.LocalPlayer.Paddle.Y,
+		g.LocalPlayer.Paddle.X+g.LocalPlayer.Paddle.Width,
+		g.LocalPlayer.Paddle.Y+g.LocalPlayer.Paddle.Height,
 		paddleStyle,
-		g.LeftPlayer.Paddle.Display(),
+		g.LocalPlayer.Paddle.Display(),
 	)
 
 	drawSprite(
 		g.Screen,
-		g.RightPlayer.Paddle.X,
-		g.RightPlayer.Paddle.Y,
-		g.RightPlayer.Paddle.X+g.RightPlayer.Paddle.Width,
-		g.RightPlayer.Paddle.Y+g.RightPlayer.Paddle.Height,
+		g.RemotePlayer.Paddle.X,
+		g.RemotePlayer.Paddle.Y,
+		g.RemotePlayer.Paddle.X+g.RemotePlayer.Paddle.Width,
+		g.RemotePlayer.Paddle.Y+g.RemotePlayer.Paddle.Height,
 		paddleStyle,
-		g.RightPlayer.Paddle.Display(),
+		g.RemotePlayer.Paddle.Display(),
 	)
 }
 
@@ -78,16 +132,16 @@ func (g *Game) DrawBall(style tcell.Style) {
 	width, height := g.Screen.Size()
 
 	g.Ball.CheckEdges(width, height)
-	g.Ball.CheckCollisions(g.LeftPlayer.Paddle, g.RightPlayer.Paddle)
+	g.Ball.CheckCollisions(g.LocalPlayer.Paddle, g.RemotePlayer.Paddle)
 
 	if g.Ball.HasHitLeft() {
-		g.RightPlayer.Score += 1
+		g.RemotePlayer.Score += 1
 		pause(1000)
 		g.Ball.ResetLeft(width)
 	}
 
 	if g.Ball.HasHitRight(width) {
-		g.LeftPlayer.Score += 1
+		g.LocalPlayer.Score += 1
 		pause(1000)
 		g.Ball.ResetRight(width)
 	}
@@ -100,8 +154,8 @@ func (g *Game) DrawBall(style tcell.Style) {
 // Draws the player scores on the game screen.
 func (g *Game) DrawScores(style tcell.Style) {
 	width, _ := g.Screen.Size()
-	leftScore := fmt.Sprintf("← %s", strconv.Itoa(g.LeftPlayer.Score))
-	rightScore := fmt.Sprintf("%s →", strconv.Itoa(g.RightPlayer.Score))
+	leftScore := fmt.Sprintf("← %s", strconv.Itoa(g.LocalPlayer.Score))
+	rightScore := fmt.Sprintf("%s →", strconv.Itoa(g.RemotePlayer.Score))
 
 	drawSprite(g.Screen, (width/2)-10, 1, (width/2)-7, 1, style, leftScore)
 	drawSprite(g.Screen, (width/2)+10, 1, (width/2)+13, 1, style, rightScore)
@@ -109,12 +163,12 @@ func (g *Game) DrawScores(style tcell.Style) {
 
 // Checks if the game is over.
 func (g *Game) GameOver() bool {
-	return g.LeftPlayer.Score == g.MaxScore || g.RightPlayer.Score == g.MaxScore
+	return g.LocalPlayer.Score == g.MaxScore || g.RemotePlayer.Score == g.MaxScore
 }
 
 // Declares the winner of the game.
 func (g *Game) DeclareWinner() string {
-	if g.LeftPlayer.Score > g.RightPlayer.Score {
+	if g.LocalPlayer.Score > g.RemotePlayer.Score {
 		return "← Winner"
 	} else {
 		return "Winner →"
@@ -133,16 +187,22 @@ func (g *Game) PollEvents() {
 		if isExitKey(event.Key()) {
 			screen.Fini()
 			os.Exit(0)
-		} else if event.Rune() == 'w' {
-			g.LeftPlayer.Paddle.MoveUp()
-		} else if event.Rune() == 's' {
-			g.LeftPlayer.Paddle.MoveDown(height)
+			g.LocalPlayer.Paddle.MoveDown(height)
 		} else if event.Key() == tcell.KeyUp {
-			g.RightPlayer.Paddle.MoveUp()
+			g.LocalPlayer.Paddle.MoveUp()
 		} else if event.Key() == tcell.KeyDown {
-			g.RightPlayer.Paddle.MoveDown(height)
+			g.LocalPlayer.Paddle.MoveDown(height)
 		}
 	}
+}
+
+// Draw a wait screen while waiting for a connection in server mode.
+func (g *Game) DrawWaitScreen(style tcell.Style) {
+	width, _ := g.Screen.Size()
+
+	waitMessage := fmt.Sprintf("Waiting for a player to connect on port %d...", g.Port)
+	drawSprite(g.Screen, (width/2)-4, 7, (width/2)+5, 7, style, waitMessage)
+	g.Screen.Show()
 }
 
 func (g *Game) DrawEndGame(style tcell.Style) {
