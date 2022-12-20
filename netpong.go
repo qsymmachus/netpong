@@ -34,15 +34,7 @@ func main() {
 	}
 
 	game := createGame(screen)
-	go game.Run()
-
-	for {
-		game.PollEvents()
-	}
-}
-
-func createClient() {
-
+	game.Run()
 }
 
 func createGame(screen tcell.Screen) Game {

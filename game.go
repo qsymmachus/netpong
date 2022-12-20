@@ -23,6 +23,16 @@ func (g *Game) Run() {
 	style := DefaultGameStyle()
 	paddleStyle := DefaultPaddleStyle()
 
+	// Continually poll for events (game inputs and outputs) in the background.
+	// Events update game state.
+	go func() {
+		for {
+			g.PollEvents()
+		}
+	}()
+
+	// Control loop that continually checks game state and redraws the screen based
+	// on that state.
 	for {
 		g.Screen.Clear()
 
