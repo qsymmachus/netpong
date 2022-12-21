@@ -32,9 +32,16 @@ type Game struct {
 	ServerAddress string
 }
 
-// Server-side handling of a stream of paddle movement commands between
-// the local and remote games.
-func (g *Game) Play(stream pb.NetPong_PlayServer) error {
+// I created this interface so I could write a version of the `Play` function
+// that accepts either a `NetPong_PlayServer` or `NetPong_PlayClient`.
+type PlayStream interface {
+	Send(*pb.MovePaddle) error
+	Recv() (*pb.MovePaddle, error)
+}
+
+// Implementation of streamed gameplay between a local and remote player. The
+// function is identical for clients and servers.
+func (g *Game) PlayWithStream(stream PlayStream) error {
 	g.Connected = true
 	defer func() { g.Connected = false }()
 	_, height := g.Screen.Size()
@@ -69,41 +76,10 @@ func (g *Game) Play(stream pb.NetPong_PlayServer) error {
 	}
 }
 
-// Client-side handling of a stream of paddle movement commands between
+// Server-side handling of a stream of paddle movement commands between
 // the local and remote games.
-func (g *Game) PlayClient(stream pb.NetPong_PlayClient) error {
-	g.Connected = true
-	defer func() { g.Connected = false }()
-	_, height := g.Screen.Size()
-
-	for {
-		// Receive paddle movement commands from the remote game and use
-		// them to update local game state.
-		remoteMove, err := stream.Recv()
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-
-		if remoteMove.Direction == pb.Direction_UP {
-			g.RemotePlayer.Paddle.MoveUp()
-		} else if remoteMove.Direction == pb.Direction_DOWN {
-			g.RemotePlayer.Paddle.MoveDown(height)
-		}
-
-		// Poll local key events and turn them into paddle movement commands to
-		// send them to the remote game.
-		switch event := g.Screen.PollEvent().(type) {
-		case *tcell.EventKey:
-			if event.Key() == tcell.KeyUp {
-				stream.Send(&pb.MovePaddle{Direction: pb.Direction_UP})
-			} else if event.Key() == tcell.KeyDown {
-				stream.Send(&pb.MovePaddle{Direction: pb.Direction_DOWN})
-			}
-		}
-	}
+func (g *Game) Play(stream pb.NetPong_PlayServer) error {
+	return g.PlayWithStream(stream)
 }
 
 // Starts the game.
@@ -151,7 +127,7 @@ func (g *Game) Run() {
 			log.Fatalf("Failed to connect to remote game: %v\n", err)
 		}
 
-		go g.PlayClient(stream)
+		go g.PlayWithStream(stream)
 	}
 
 	// Control loop that continually checks game state and redraws the screen based
