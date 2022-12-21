@@ -232,7 +232,6 @@ func (g *Game) PollEvents() {
 		if isExitKey(event.Key()) {
 			screen.Fini()
 			os.Exit(0)
-			g.LocalPlayer.Paddle.MoveDown(height)
 		} else if event.Key() == tcell.KeyUp {
 			g.LocalPlayer.Paddle.MoveUp()
 		} else if event.Key() == tcell.KeyDown {
