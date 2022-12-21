@@ -30,6 +30,8 @@ type Game struct {
 	ServerMode    bool
 	Port          int
 	ServerAddress string
+
+	Errors chan (error)
 }
 
 // I created this interface so I could write a version of the `Play` function
@@ -54,6 +56,7 @@ func (g *Game) PlayWithStream(stream PlayStream) error {
 			return nil
 		}
 		if err != nil {
+			g.Errors <- err
 			return err
 		}
 
@@ -68,9 +71,15 @@ func (g *Game) PlayWithStream(stream PlayStream) error {
 		switch event := g.Screen.PollEvent().(type) {
 		case *tcell.EventKey:
 			if event.Key() == tcell.KeyUp {
-				stream.Send(&pb.MovePaddle{Direction: pb.Direction_UP})
+				err := stream.Send(&pb.MovePaddle{Direction: pb.Direction_UP})
+				if err != nil {
+					g.Errors <- err
+				}
 			} else if event.Key() == tcell.KeyDown {
-				stream.Send(&pb.MovePaddle{Direction: pb.Direction_DOWN})
+				err := stream.Send(&pb.MovePaddle{Direction: pb.Direction_DOWN})
+				if err != nil {
+					g.Errors <- err
+				}
 			}
 		}
 	}
@@ -119,7 +128,7 @@ func (g *Game) Run() {
 		defer conn.Close()
 
 		client := pb.NewNetPongClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
 		stream, err := client.Play(ctx)
@@ -230,8 +239,7 @@ func (g *Game) PollEvents() {
 		screen.Sync()
 	case *tcell.EventKey:
 		if isExitKey(event.Key()) {
-			screen.Fini()
-			os.Exit(0)
+			g.End()
 		} else if event.Key() == tcell.KeyUp {
 			g.LocalPlayer.Paddle.MoveUp()
 		} else if event.Key() == tcell.KeyDown {
@@ -249,12 +257,29 @@ func (g *Game) DrawWaitScreen(style tcell.Style) {
 	g.Screen.Show()
 }
 
+// Draws the end game screen.
 func (g *Game) DrawEndGame(style tcell.Style) {
 	width, _ := g.Screen.Size()
 
 	drawSprite(g.Screen, (width/2)-4, 7, (width/2)+5, 7, style, g.DeclareWinner())
 	drawSprite(g.Screen, (width/2)-8, 10, (width/2)+8, 10, style, "(CTRL+C to exit)")
 	g.Screen.Show()
+}
+
+// Ends the game.
+func (g *Game) End() {
+	g.Screen.Fini()
+	g.PrintErrors()
+	os.Exit(0)
+}
+
+// Prints all errors that were sent to the `Errors` channel during the game.
+func (g *Game) PrintErrors() {
+	for err := range g.Errors {
+		fmt.Printf("Encountered error: %v\n", err)
+	}
+
+	close(g.Errors)
 }
 
 // Draws a sprite on the screen, a group of runes with rectangular boundaries set

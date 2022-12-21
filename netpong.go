@@ -60,14 +60,17 @@ func createGame(screen tcell.Screen, serverMode bool, port int, serverAddress st
 	}
 
 	return Game{
-		Screen:        screen,
-		Ball:          ball,
-		LocalPlayer:   player1,
-		RemotePlayer:  player2,
-		MaxScore:      5,
+		Screen:       screen,
+		Ball:         ball,
+		LocalPlayer:  player1,
+		RemotePlayer: player2,
+		MaxScore:     5,
+
 		ServerMode:    serverMode,
 		Port:          port,
 		ServerAddress: serverAddress,
+
+		Errors: make(chan error, 0),
 	}
 }
 
