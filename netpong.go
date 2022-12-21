@@ -13,6 +13,7 @@ var (
 	serverMode    = flag.Bool("server", false, "Host a netpong game as a server")
 	port          = flag.Int("port", 60049, "The server port")
 	serverAddress = flag.String("address", "localhost:60049", "The address of the netpong game to connect to in the format of host:port")
+	DebugMode     = flag.Bool("debug", false, "When enabled, the game will log network errors encountered during play when it exits")
 )
 
 func main() {
@@ -70,7 +71,8 @@ func createGame(screen tcell.Screen, serverMode bool, port int, serverAddress st
 		Port:          port,
 		ServerAddress: serverAddress,
 
-		Errors: make(chan error, 0),
+		Errors:    make(chan error, 0),
+		DebugMode: *DebugMode,
 	}
 }
 

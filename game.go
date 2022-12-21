@@ -31,7 +31,8 @@ type Game struct {
 	Port          int
 	ServerAddress string
 
-	Errors chan (error)
+	Errors    chan (error)
+	DebugMode bool
 }
 
 // I created this interface so I could write a version of the `Play` function
@@ -269,7 +270,10 @@ func (g *Game) DrawEndGame(style tcell.Style) {
 // Ends the game.
 func (g *Game) End() {
 	g.Screen.Fini()
-	g.PrintErrors()
+	if g.DebugMode {
+		g.PrintErrors()
+	}
+	close(g.Errors)
 	os.Exit(0)
 }
 
@@ -278,8 +282,6 @@ func (g *Game) PrintErrors() {
 	for err := range g.Errors {
 		fmt.Printf("Encountered error: %v\n", err)
 	}
-
-	close(g.Errors)
 }
 
 // Draws a sprite on the screen, a group of runes with rectangular boundaries set
