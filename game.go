@@ -270,7 +270,7 @@ func (g *Game) DrawWaitScreen(style tcell.Style) {
 	width, _ := g.Screen.Size()
 
 	waitMessage := fmt.Sprintf("Waiting for a player to connect on port %d...", g.Port)
-	drawSprite(g.Screen, (width/2)-4, 7, (width/2)+5, 7, style, waitMessage)
+	drawSprite(g.Screen, (width/2)-25, 7, (width/2)+25, 7, style, waitMessage)
 	g.Screen.Show()
 }
 
