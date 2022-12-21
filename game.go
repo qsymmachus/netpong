@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"strconv"
 	"time"
@@ -12,7 +14,6 @@ import (
 	pb "github.com/qsymmachus/netpong/netpong"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	// pb "github.com/qsymmachus/netpong/netpong"
 )
 
 // Models a game of pong. Implements the `NetPongServer` interface.
@@ -31,14 +32,16 @@ type Game struct {
 	ServerAddress string
 }
 
-// Server-side handling of the stream of "move paddle" commands from the
-// remote player.
+// Server-side handling of a stream of paddle movement commands between
+// the local and remote games.
 func (g *Game) Play(stream pb.NetPong_PlayServer) error {
 	g.Connected = true
 	defer func() { g.Connected = false }()
 	_, height := g.Screen.Size()
 
 	for {
+		// Receive paddle movement commands from the remote game and use
+		// them to update local game state.
 		remoteMove, err := stream.Recv()
 		if err == io.EOF {
 			return nil
@@ -51,6 +54,54 @@ func (g *Game) Play(stream pb.NetPong_PlayServer) error {
 			g.RemotePlayer.Paddle.MoveUp()
 		} else if remoteMove.Direction == pb.Direction_DOWN {
 			g.RemotePlayer.Paddle.MoveDown(height)
+		}
+
+		// Poll local key events and turn them into paddle movement commands to
+		// send them to the remote game.
+		switch event := g.Screen.PollEvent().(type) {
+		case *tcell.EventKey:
+			if event.Key() == tcell.KeyUp {
+				stream.Send(&pb.MovePaddle{Direction: pb.Direction_UP})
+			} else if event.Key() == tcell.KeyDown {
+				stream.Send(&pb.MovePaddle{Direction: pb.Direction_DOWN})
+			}
+		}
+	}
+}
+
+// Client-side handling of a stream of paddle movement commands between
+// the local and remote games.
+func (g *Game) PlayClient(stream pb.NetPong_PlayClient) error {
+	g.Connected = true
+	defer func() { g.Connected = false }()
+	_, height := g.Screen.Size()
+
+	for {
+		// Receive paddle movement commands from the remote game and use
+		// them to update local game state.
+		remoteMove, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		if remoteMove.Direction == pb.Direction_UP {
+			g.RemotePlayer.Paddle.MoveUp()
+		} else if remoteMove.Direction == pb.Direction_DOWN {
+			g.RemotePlayer.Paddle.MoveDown(height)
+		}
+
+		// Poll local key events and turn them into paddle movement commands to
+		// send them to the remote game.
+		switch event := g.Screen.PollEvent().(type) {
+		case *tcell.EventKey:
+			if event.Key() == tcell.KeyUp {
+				stream.Send(&pb.MovePaddle{Direction: pb.Direction_UP})
+			} else if event.Key() == tcell.KeyDown {
+				stream.Send(&pb.MovePaddle{Direction: pb.Direction_DOWN})
+			}
 		}
 	}
 }
@@ -69,11 +120,21 @@ func (g *Game) Run() {
 	}()
 
 	if g.ServerMode {
-		// If the game is running in server mode, wait for a connection.
+		// If the game is running in server mode, listen and wait for a connection.
+		listen, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", g.Port))
+		if err != nil {
+			log.Fatalf("Failed to start game server: %v\n", err)
+		}
+
+		grpcServer := grpc.NewServer()
+		pb.RegisterNetPongServer(grpcServer, g)
+		go grpcServer.Serve(listen)
+
 		for !g.Connected {
 			g.DrawWaitScreen(style)
 		}
 	} else {
+		// Otherwise, the game is in client mode, and will attempt to connect to a server.
 		connOpts := grpc.WithTransportCredentials(insecure.NewCredentials())
 		conn, err := grpc.Dial(*serverAddress, connOpts)
 		if err != nil {
@@ -81,8 +142,16 @@ func (g *Game) Run() {
 		}
 		defer conn.Close()
 
-		// TODO do something with the client
-		// client := pb.NewNetPongClient(conn)
+		client := pb.NewNetPongClient(conn)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		stream, err := client.Play(ctx)
+		if err != nil {
+			log.Fatalf("Failed to connect to remote game: %v\n", err)
+		}
+
+		go g.PlayClient(stream)
 	}
 
 	// Control loop that continually checks game state and redraws the screen based
