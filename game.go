@@ -129,7 +129,7 @@ func (g *Game) Run() {
 		defer conn.Close()
 
 		client := pb.NewNetPongClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
 		stream, err := client.Play(ctx)
