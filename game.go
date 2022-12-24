@@ -49,6 +49,27 @@ func (g *Game) PlayWithStream(stream PlayStream) error {
 	defer func() { g.Connected = false }()
 	_, height := g.Screen.Size()
 
+	go func() {
+		// Poll local key events and turn them into paddle movement commands to
+		// send them to the remote game.
+		for {
+			switch event := g.Screen.PollEvent().(type) {
+			case *tcell.EventKey:
+				if event.Key() == tcell.KeyUp {
+					err := stream.Send(&pb.MovePaddle{Direction: pb.Direction_UP})
+					if err != nil {
+						g.Errors <- err
+					}
+				} else if event.Key() == tcell.KeyDown {
+					err := stream.Send(&pb.MovePaddle{Direction: pb.Direction_DOWN})
+					if err != nil {
+						g.Errors <- err
+					}
+				}
+			}
+		}
+	}()
+
 	for {
 		// Receive paddle movement commands from the remote game and use
 		// them to update local game state.
@@ -65,23 +86,6 @@ func (g *Game) PlayWithStream(stream PlayStream) error {
 			g.RemotePlayer.Paddle.MoveUp()
 		} else if remoteMove.Direction == pb.Direction_DOWN {
 			g.RemotePlayer.Paddle.MoveDown(height)
-		}
-
-		// Poll local key events and turn them into paddle movement commands to
-		// send them to the remote game.
-		switch event := g.Screen.PollEvent().(type) {
-		case *tcell.EventKey:
-			if event.Key() == tcell.KeyUp {
-				err := stream.Send(&pb.MovePaddle{Direction: pb.Direction_UP})
-				if err != nil {
-					g.Errors <- err
-				}
-			} else if event.Key() == tcell.KeyDown {
-				err := stream.Send(&pb.MovePaddle{Direction: pb.Direction_DOWN})
-				if err != nil {
-					g.Errors <- err
-				}
-			}
 		}
 	}
 }
