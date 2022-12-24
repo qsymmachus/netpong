@@ -268,7 +268,10 @@ func (g *Game) DrawEndGame(style tcell.Style) {
 
 	drawSprite(g.Screen, (width/2)-4, 7, (width/2)+5, 7, style, g.DeclareWinner())
 	drawSprite(g.Screen, (width/2)-8, 10, (width/2)+8, 10, style, "(CTRL+C to exit)")
-	g.Screen.Show()
+
+	for {
+		g.Screen.Show()
+	}
 }
 
 // Ends the game.
