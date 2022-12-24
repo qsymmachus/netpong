@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"math/rand"
-	"time"
 
 	"github.com/gdamore/tcell"
 )
@@ -34,7 +32,7 @@ func createGame(screen tcell.Screen, serverMode bool, port int, serverAddress st
 	ball := Ball{
 		X:      width / 2,
 		Y:      1,
-		Xspeed: 1 * randomizeBallDirection(),
+		Xspeed: 1 * ballDirection(serverMode),
 		Yspeed: 1,
 	}
 
@@ -97,16 +95,13 @@ func isExitKey(key tcell.Key) bool {
 	return key == tcell.KeyEscape || key == tcell.KeyCtrlC
 }
 
-// Randomizes the direction of the ball along the X-axis by returning -1 or 1.
-func randomizeBallDirection() (direction int) {
-	rand.Seed(time.Now().UnixNano())
-	n := rand.Intn(2)
-
-	if n == 1 {
-		direction = 1
+// Determines the initial direction of the ball along X-axis by returning -1 or 1.
+// When the current player is running in server mode, the balls moves toward them,
+// otherwise it moves away.
+func ballDirection(serverMode bool) int {
+	if serverMode {
+		return -1
 	} else {
-		direction = -1
+		return 1
 	}
-
-	return direction
 }
