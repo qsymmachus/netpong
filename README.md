@@ -38,6 +38,16 @@ In this example we're playing against a game on the same host; use a different a
 
 Once connected the game will begin. The local player's paddle is on the right-hand side, and the remote player's paddle is on the left-hand side. Move your paddle up and down using the arrow key. The first player to score 5 points wins.
 
+Future improvements
+-------------------
+
+The game has some limitations I plan to fix in the future. Here's my roadmap in rough priority order:
+
+[ ] Always consistent ball positioning. Only the paddle position is shared state between games; for ball positioning, the game relies on the ball deterministically following the same path on screens of the same size. This doesn't work if each player has a different screen size.
+[ ] Restart the game from the "Game over" screen
+[ ] Configurable victory score
+[ ] Beeps and boops when the ball collides
+
 Development
 -----------
 

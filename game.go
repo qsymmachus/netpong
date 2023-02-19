@@ -260,6 +260,7 @@ func (g *Game) DrawWaitScreen(style tcell.Style) {
 	waitMessage := fmt.Sprintf("Waiting for a player to connect on port %d...", g.Port)
 	drawSprite(g.Screen, (width/2)-25, 7, (width/2)+25, 7, style, waitMessage)
 	g.Screen.Show()
+	pause(500)
 }
 
 // Draws the end game screen.
@@ -271,6 +272,7 @@ func (g *Game) DrawEndGame(style tcell.Style) {
 
 	for {
 		g.Screen.Show()
+		pause(500)
 	}
 }
 
