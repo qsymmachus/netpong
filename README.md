@@ -1,9 +1,9 @@
-netpong
-=======
+netpong 🏓
+==========
 
-My attempt to implement a networked game of pong.
+Bored at work? Play pong in your terminal over the network!
 
-The game interface was inspired by [this excellent tutorial](https://earthly.dev/blog/pongo/) on using `tcell` to develop a TUI. I extended the game to support networked play between two players. It uses a streaming gRPC API for networked play.
+The game interface was inspired by [this excellent tutorial](https://earthly.dev/blog/pongo/) on using `tcell` to develop a TUI. I extended the game to support networked play between two players using a streaming gRPC API.
 
 How to play
 -----------
