@@ -13,7 +13,7 @@ This guide assumes you have a working `go` installation.
 To install the game:
 
 ```
-go install github.com/qsymmachus/netpong
+go install github.com/qsymmachus/netpong@latest
 ```
 
 ### Hosting a game in server mode
